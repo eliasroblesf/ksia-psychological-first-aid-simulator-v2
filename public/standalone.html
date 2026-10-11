@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KSIA Psychological First Aid & Human Support Simulator</title>
+  <meta name="description" content="Deep Psychological First Aid, Human Support & Post-Crisis Self-Care Simulator for King Salman International Airport (KSIA) Administration Complex responders." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Embedded jsPDF via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* CSS Variables & Tactical Dark Palette */
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-yellow: #facc15;
+      --accent-yellow-hover: #eab308;
+      --success-green: #16a34a;
+      --emergency-red: #dc2626;
+      --info-cyan: #06b6d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    html[dir="rtl"] body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Bleeping Yellow Animation */
+    @keyframes bleepYellow {
+      0% { 
+        box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.85); 
+        border-color: #facc15; 
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.02);
+      }
+      70% { 
+        box-shadow: 0 0 0 16px rgba(250, 204, 21, 0); 
+        border-color: #eab308; 
+      }
+      100% { 
+        box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); 
+        border-color: #facc15; 
+        transform: scale(1);
+      }
+    }
+
+    .bleeping-yellow-btn {
+      animation: bleepYellow 1.5s infinite ease-in-out;
+      background-color: #facc15 !important;
+      color: #0f172a !important;
+      font-weight: 800 !important;
+      border: 2px solid #facc15 !important;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem;
+    }
+
+    /* Tactical Navbar */
+    .navbar {
+      background-color: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background-color: var(--accent-yellow);
+      color: #0f172a;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 10px rgba(250, 204, 21, 0.25);
+    }
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .badge-pfa {
+      background: rgba(250, 204, 21, 0.15);
+      color: var(--accent-yellow);
+      border: 1px solid rgba(250, 204, 21, 0.35);
+      border-radius: 9999px;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .brand-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .lang-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn.active {
+      background: var(--accent-yellow);
+      color: #0f172a;
+      border-color: var(--accent-yellow);
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Notice Banner */
+    .notice-banner {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin: 1.25rem 0;
+      color: #a7f3d0;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .notice-banner h4 {
+      color: #34d399;
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.4rem;
+    }
+    input, select {
+      width: 100%;
+      background: #090e17;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent-yellow);
+      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
+    }
+    .error-msg {
+      color: #f87171;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.5rem;
+      border-radius: 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: var(--accent-yellow);
+      color: #0f172a;
+    }
+    .btn-primary:hover {
+      background: var(--accent-yellow-hover);
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      background: #090e17;
+      height: 8px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      margin: 0.75rem 0 1.25rem;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #facc15);
+      transition: width 0.4s ease;
+    }
+
+    /* Option choices */
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      color: #e2e8f0;
+      border-radius: 0.85rem;
+      padding: 1.1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      transition: all 0.2s;
+    }
+    html[dir="rtl"] .option-btn {
+      text-align: right;
+    }
+    .option-btn:hover:not(:disabled) {
+      border-color: #64748b;
+      background: #151f33;
+    }
+    .option-btn.correct {
+      border-color: #10b981;
+      background: rgba(6, 78, 59, 0.4);
+      color: #ecfdf5;
+    }
+    .option-btn.incorrect {
+      border-color: #ef4444;
+      background: rgba(127, 29, 29, 0.4);
+      color: #fef2f2;
+    }
+    .option-tag {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #334155;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .option-btn.correct .option-tag {
+      background: #10b981;
+      color: #0f172a;
+    }
+    .option-btn.incorrect .option-tag {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Pedagogical Feedback Boxes */
+    .feedback-box {
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+    .feedback-box.correct {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .feedback-box.incorrect {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .script-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    @media (min-width: 640px) {
+      .script-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .script-box {
+      background: #090e17;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+    .script-box.say {
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .script-box.not-say {
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .script-title {
+      font-weight: 800;
+      font-size: 0.75rem;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+    }
+    .script-box.say .script-title { color: #34d399; }
+    .script-box.not-say .script-title { color: #f87171; }
+
+    .rationale-card {
+      background: #131c2e;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      margin-top: 0.75rem;
+    }
+
+    /* Legend Banner */
+    .legend-banner {
+      background: rgba(250, 204, 21, 0.12);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+      text-align: center;
+      color: #fef08a;
+      font-weight: 800;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-title">
+            <span id="nav-brand-text">KSIA RIYADH</span>
+            <span class="badge-pfa">PFA SIMULATOR</span>
+          </div>
+          <div class="brand-sub" id="nav-sub-text">King Salman International Airport Emergency Response</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="lang-btn active" id="btn-lang-en" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="btn-lang-ar" onclick="setLang('ar')">عربي</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- SCREEN 0: REGISTRATION & SPLASH -->
+    <section id="screen-reg" class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <span class="badge-pfa">KSIA ADMINISTRATION COMPLEX</span>
+          <h1 id="reg-title" style="font-size:1.6rem; font-weight:800; margin-top:0.4rem; color:#fff;">
+            Psychological First Aid & Human Support Simulator
+          </h1>
+          <p id="reg-desc" style="font-size:0.85rem; color:#94a3b8; margin-top:0.35rem; max-width:620px;">
+            In-depth responder simulation adhering to WHO PFA Guidelines, IASC MHPSS Standards, and Saudi MOH 937 / NCMHP Directives.
+          </p>
+        </div>
+      </div>
+
+      <!-- CRITICAL PEDAGOGICAL NOTICE -->
+      <div class="notice-banner">
+        <h4 id="notice-title">⏳ CRITICAL PEDAGOGICAL NOTICE: ZERO TIME PRESSURE</h4>
+        <p id="notice-desc">
+          This training module has <strong>NO COUNTDOWN TIMER</strong>. Take all the time you need to reflect, read word-for-word scripts, and process emotional safety at your natural pace.
+        </p>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="reg-form" onsubmit="handleRegistration(event)">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-top:1.25rem;">
+          <div class="form-group">
+            <label id="lbl-name" for="reg-name">Full Legal Name *</label>
+            <input type="text" id="reg-name" placeholder="e.g. Capt. Sarah Al-Harbi" required />
+            <div id="err-name" class="error-msg hidden">Please enter your full name (minimum 3 characters).</div>
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-id" for="reg-id">Employee ID Number *</label>
+            <input type="text" id="reg-id" placeholder="e.g. KSIA-90412" required />
+            <div id="err-id" class="error-msg hidden">Please enter your official employee ID.</div>
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-date" for="reg-date">Assessment Date *</label>
+            <input type="date" id="reg-date" required />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:1.25rem;">
+          <span id="btn-start-text">START PFA SIMULATOR ➔</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- SCREEN 1 & 2: SIMULATION DRILL -->
+    <section id="screen-sim" class="card hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <span class="badge-pfa" id="sim-phase-tag">PHASE 1: PRACTICAL ON-SCENE HELP</span>
+        <span style="font-size:0.8rem; font-weight:700; color:#facc15;" id="sim-step-tag">1 / 6</span>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="sim-progress-bar" style="width: 16%;"></div>
+      </div>
+
+      <h2 id="sim-title" style="font-size:1.25rem; font-weight:800; color:#fff; margin-bottom:0.5rem;">Scenario Title</h2>
+      <p id="sim-desc" style="font-size:0.95rem; color:#cbd5e1; line-height:1.6; margin-bottom:1.25rem;"></p>
+
+      <!-- Options -->
+      <div id="sim-options-container"></div>
+
+      <!-- Pedagogical Feedback Card -->
+      <div id="sim-feedback-card" class="hidden">
+        <div id="sim-feedback-box" class="feedback-box">
+          <h4 id="sim-feedback-title" style="font-weight:800; font-size:0.9rem; margin-bottom:0.35rem;"></h4>
+          <p id="sim-feedback-exp" style="font-size:0.85rem; line-height:1.5;"></p>
+        </div>
+
+        <div class="script-grid">
+          <div class="script-box say">
+            <div class="script-title" id="lbl-what-to-say">WORD-FOR-WORD SCRIPT (WHAT TO SAY)</div>
+            <p id="sim-what-to-say" style="font-style:italic;"></p>
+          </div>
+          <div class="script-box not-say">
+            <div class="script-title" id="lbl-what-not-to-say">CONTRAINDICATED (WHAT NOT TO SAY)</div>
+            <p id="sim-what-not-to-say" style="font-style:italic;"></p>
+          </div>
+        </div>
+
+        <div class="rationale-card">
+          <strong id="lbl-rationale" style="color:#facc15; display:block; margin-bottom:0.25rem; text-transform:uppercase;">
+            Cultural & Psychological Safety Rationale:
+          </strong>
+          <p id="sim-rationale"></p>
+        </div>
+
+        <button onclick="nextScenario()" class="btn btn-primary" style="margin-top:1.25rem;" id="btn-next-scenario">
+          <span>PROCEED TO NEXT SCENARIO ➔</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PHASE 2 INTERLUDE BANNER -->
+    <section id="screen-interlude" class="card hidden" style="border-color:#06b6d4; text-align:center;">
+      <div style="font-size:2.5rem; margin-bottom:0.5rem;">💙</div>
+      <span class="badge-pfa" style="border-color:#06b6d4; color:#06b6d4; background:rgba(6,182,212,0.1);">
+        PHASE 1 COMPLETE • ENTERING PHASE 2
+      </span>
+      <h2 id="interlude-title" style="font-size:1.4rem; font-weight:800; margin-top:0.5rem; color:#fff;">
+        Post-Crisis Self-Care, Processing & Human Support
+      </h2>
+      <p id="interlude-desc" style="font-size:0.85rem; color:#94a3b8; max-width:600px; margin:0.5rem auto 1.5rem; line-height:1.5;">
+        Shifting from acute scene stabilization to responder resilience: navigating survivor guilt after cardiac arrest, separating technical AARs from emotional care, and mobilizing Saudi MOH 937 & NCMHP networks.
+      </p>
+      <button onclick="startPhase2()" class="btn btn-primary" style="background:#06b6d4; color:#0f172a; max-width:320px; margin:0 auto;">
+        <span id="btn-interlude-text">START PHASE 2 SIMULATION ➔</span>
+      </button>
+    </section>
+
+    <!-- SCREEN 3: AUDIT & CERTIFICATE SCREEN -->
+    <section id="screen-audit" class="card hidden">
+      <div style="text-align:center; margin-bottom:1.5rem;">
+        <div style="font-size:2.8rem; margin-bottom:0.25rem;">🏆</div>
+        <span class="badge-pfa">OFFICIAL AUDIT COMPLETE</span>
+        <h2 id="audit-title" style="font-size:1.5rem; font-weight:800; color:#fff; margin-top:0.4rem;">
+          Certified PFA Tactical Specialist
+        </h2>
+        <div id="audit-score" style="font-size:1.8rem; font-weight:900; color:#facc15; margin:0.4rem 0;">6 / 6 (100%)</div>
+        <p id="audit-meta" style="font-size:0.8rem; color:#94a3b8;"></p>
+      </div>
+
+      <!-- BLEEPING YELLOW DOWNLOAD BUTTON -->
+      <div style="margin: 1.5rem 0;">
+        <div class="legend-banner" id="audit-legend">
+          ⭐ Remember to download your PDF certificate and share it in your team group!
+        </div>
+
+        <button onclick="downloadOfficialPdf()" class="btn bleeping-yellow-btn" style="font-size:1.05rem; padding:1.1rem;">
+          <span id="btn-download-text">📥 DOWNLOAD OFFICIAL PDF CERTIFICATE</span>
+        </button>
+      </div>
+
+      <!-- Saudi Referral Helplines -->
+      <div style="background:#090e17; border:1px solid var(--border-color); border-radius:0.75rem; padding:1rem; margin-top:1.5rem;">
+        <h4 id="lbl-hotlines" style="color:#34d399; font-weight:800; font-size:0.85rem; margin-bottom:0.5rem;">
+          🇸🇦 Official Saudi Support Pathways (Strictly Confidential):
+        </h4>
+        <ul style="font-size:0.8rem; color:#cbd5e1; list-style:none; line-height:1.6;">
+          <li>• <strong>MOH 937</strong>: Dial 937 (Press 1 for Medical/Psychological Counseling - 24/7 Free)</li>
+          <li>• <strong>NCMHP Qareebon</strong>: National Center for Mental Health Promotion tele-counseling hotline (920033360)</li>
+          <li>• <strong>KSIA EROC</strong>: Emergency Response & Crisis Command (Ext. 911 / Internal Dispatch)</li>
+        </ul>
+      </div>
+
+      <button onclick="restartDrill()" class="btn" style="background:#334155; color:#fff; margin-top:1.25rem;">
+        <span id="btn-restart-text">↺ Retake Simulation Drill</span>
+      </button>
+    </section>
+  </main>
+
+  <script>
+    // EMBEDDED DATASET
+    const DATASET = {
+      phases: [
+        { id: "phase1", title: { en: "PHASE 1: On-Scene Practical Help & Crisis Response", ar: "المرحلة 1: المساعدة العملية الميدانية والاستجابة للأزمات" } },
+        { id: "phase2", title: { en: "PHASE 2: Post-Crisis Self-Care, Processing & Human Support", ar: "المرحلة 2: الرعاية الذاتية بعد الحادث والدعم الإنساني" } }
+      ],
+      scenarios: [
+        {
+          id: "101",
+          phaseId: "phase1",
+          title: { en: "Earthquake / Tremor Word-for-Word Script", ar: "سيناريو الكلمات المباشرة أثناء السيزميك / الهزة" },
+          description: {
+            en: "Following a sudden tremor, an employee is trembling uncontrollably near a damaged office partition. How do you approach them safely?",
+            ar: "عقب هزة أرضية مفاجئة، يتصاعد الارتجاف لدى موظف بجوار حاجز مكتبي متضرر. كيف تتقرب منه بأمان؟"
+          },
+          options: [
+            { 
+              id: "A", 
+              text: { 
+                en: "Approach calm, state: 'Hello, I am [Name] from ERT. We are in a safe area now. You don't have to explain anything. Let's focus on right now. Do you need water or medical attention?'", 
+                ar: "الاقتراب بهدوء والقول: 'أهلاً، أنا [الاسم] من فريق الاستجابة. نحن في منطقة آمنة الآن. لا داعي لشرح أي شيء. لنركز على اللحظة الحالية. هل تحتاچ ماء أو رعاية طبية؟'" 
+              }, 
+              correct: true 
+            },
+            { 
+              id: "B", 
+              text: { 
+                en: "Tell them: 'Calm down! It was just a small tremor, stop shaking and move along.'", 
+                ar: "قول: 'اهدأ! كانت مجرد هزة بسيطة، توقف عن الارتجاف وتحرك.'" 
+              }, 
+              correct: false 
+            },
+            { 
+              id: "C", 
+              text: { 
+                en: "Demand that they recount step-by-step how the building shook.", 
+                ar: "مطالبتهم بسرد تفاصيل اهتزاز المبنى خطوة بخطوة." 
+              }, 
+              correct: false 
+            }
+          ],
+          explanation: {
+            en: "WHO PFA scripts emphasize identity, safety, non-pressured physical presence, and immediate practical needs (water/shelter) without forcing trauma disclosure.",
+            ar: "تركز نصوص منظمة الصحة العالمية على الهوية، السلامة، الوجود غير المباشر، والاحتياجات العملية الفورية دون إجبار على الإفصاح عن الصدمة."
+          },
+          whatToSay: {
+            en: '"Hello, I am [Name] from ERT. We are in a safe area now. You don\'t have to explain anything. Let\'s focus on right now. Do you need water or medical attention?"',
+            ar: '"السلام عليكم، أنا [الاسم] من فريق الطوارئ. نحن في مكان آمن. لا داعي للحديث الآن. هل تحب أن أحضر لك ماء أو مساعدة طبية؟"'
+          },
+          whatNotToSay: {
+            en: '"Calm down!", "Stop shaking, it was nothing!", or demanding they describe what happened.',
+            ar: '"اهدأ فوراً!"، "توقف عن الرجفة، لم يحدث شيء!"، أو إجباره على سرد تفاصيل الحادث.'
+          },
+          culturalRationale: {
+            en: "Trembling is an autonomic neurobiological freeze response. Commanding someone to 'calm down' causes shame. Providing water and respectful proximity in Saudi culture restores safety.",
+            ar: "الارتجاف هو رد فعل عصبي لا إرادي. أمره بالهدوء يسبب إحراجاً ويزيد التوتر. تقديم الماء والمساحة الآمنة يحفظ الكرامة ويعيد التوازن."
+          }
+        },
+        {
+          id: "102",
+          phaseId: "phase1",
+          title: { en: "Respectful Fatality Notification (Single Colleague)", ar: "الإبلاغ المحترم عن وفاة زميل" },
+          description: {
+            en: "You must inform a close colleague that another team member died despite CPR attempts. How should this be communicated?",
+            ar: "يتوجب عليك إبلاغ زميل مقرب بأن زميله قد توفي رغم محاولات الإنعاش القلبي. كيف تنقل هذا الخبر؟"
+          },
+          options: [
+            { 
+              id: "A", 
+              text: { 
+                en: "Use direct, compassionate language: 'I am very sorry to share this. [Name] has died.' Sit in silence, avoid euphemisms ('We lost him'), and offer family contact.", 
+                ar: "استخدام لغة مباشرة ورحيمة: 'أنا آسف جداً لنقل هذا. [الاسم] قد توفي.' الجلوس في صمت، تجنب العبارات الغامضة ('فقدناه')، وعرض التواصل مع الأهل." 
+              }, 
+              correct: true 
+            },
+            { 
+              id: "B", 
+              text: { 
+                en: "Say: 'He has gone to a better place, you need to be strong and stop crying immediately.'", 
+                ar: "قول: 'لقد انتقل لمكان أفضل، عليك أن تكون قوية وتتوقف عن البكاء فوراً.'" 
+              }, 
+              correct: false 
+            },
+            { 
+              id: "C", 
+              text: { 
+                en: "Conceal the news and pretend the colleague is just sleeping in the clinic.", 
+                ar: "إخفاء الخبر والادعاء بأن الزميل ينام في العيادة فقط." 
+              }, 
+              correct: false 
+            }
+          ],
+          explanation: {
+            en: "Direct, honest language avoids cognitive confusion. Respecting Islamic grief practices means allowing tearful silence, avoiding forced optimism, and focusing on family support.",
+            ar: "الصدق والمباشرة يمنعان التشتت. احترام تقاليد الحزن الإسلامية يعني السماح بالصمت والبكاء، تجنب التفاؤل المصنوع، والتركيز على دعم الأسرة."
+          },
+          whatToSay: {
+            en: '"Inna lillahi wa inna ilayhi raji\'un. I am very sorry to share this. [Name] has died. I am sitting right here with you. Take all the time you need."',
+            ar: '"إنا لله وإنا إليه راجعون. يؤسفني جداً أن أشاركك هذا الخبر، زميلنا [الاسم] توفي. أنا هنا بجانبك تماماً وخذ كل وقتك."'
+          },
+          whatNotToSay: {
+            en: '"He\'s just resting", "We lost him", or "Be a man and stop crying; crying is bad faith."',
+            ar: '"هو نائم فقط"، "فقدناه"، أو "كن قوياً ولا تبكِ فالبكاء ضعف إيمان."'
+          },
+          culturalRationale: {
+            en: "In Saudi and Islamic tradition, weeping with dignity is natural human mercy (Rahmah). Direct truthfulness prevents traumatic shock loops.",
+            ar: "في الثقافة الإسلامية، البكاء رحمة إنسانية طبيعية وليس اعتراضاً. الصدق الرحيم يمنع الصدمة الناتجة عن الغموض."
+          }
+        },
+        {
+          id: "103",
+          phaseId: "phase1",
+          title: { en: "Autism & Sensory Overload Support During Alarms", ar: "دعم التنوع العصبي والفرط الحسي أثناء الإنذارات" },
+          description: {
+            en: "An employee with sensory sensitivity is crouched covering their ears in a hallway overwhelmed by flashing strobes and loud sirens.",
+            ar: "موظف يعاني من فرط الحساسية الحسية يجلس مغطياً أذنيه في ممر مليء بأضواء الإنذار وأصوات الصفارات."
+          },
+          options: [
+            { 
+              id: "A", 
+              text: { 
+                en: "Lower visual/verbal input: avoid forced eye contact, use direct gestural or written prompts, and escort them gently to a quiet stairwell pocket.", 
+                ar: "تقليل المؤثرات: تجنب التواصل البصري الإجباري، استخدام إرشادات مكتوبة أو إشارات، ومرافقته بلطف لمنطقة هادئة." 
+              }, 
+              correct: true 
+            },
+            { 
+              id: "B", 
+              text: { 
+                en: "Shout louder into their ear to overcome the siren noise.", 
+                ar: "الصراخ بصوت أعلى في أذنه للتغلب على صوت الصفارة." 
+              }, 
+              correct: false 
+            },
+            { 
+              id: "C", 
+              text: { 
+                en: "Pull their hands away from their ears forcibly.", 
+                ar: "سحب يديه بعيداً عن أذنيه بالقوة." 
+              }, 
+              correct: false 
+            }
+          ],
+          explanation: {
+            en: "Sensory overload requires reducing stimulation, respecting body space, avoiding eye contact pressure, and moving quietly to low-decibel staging areas.",
+            ar: "تتطلب حالات الفرط الحسي تقليل المثيرات، احترام المساحة الشخصية، تجنب ضغط التواصل البصري، والنقل بهدوء لمناطق قليلة الضوضاء."
+          },
+          whatToSay: {
+            en: 'Gently gestured or written on a card: "Safe quiet zone this way. Walk with me slowly."',
+            ar: 'همس لطيف أو إشارة مكتوبة: "المكان الهادئ في هذا الاتجاه، امشِ معي بهدوء."'
+          },
+          whatNotToSay: {
+            en: 'Shouting orders, forcing eye contact, or pulling their hands away.',
+            ar: 'الصراخ، فرض التواصل البصري، أو سحب يديه بالقوة.'
+          },
+          culturalRationale: {
+            en: "Unsolicited physical touch breaches personal dignity and sparks autonomic defense panics. Respecting sensory processing ensures safe evacuation.",
+            ar: "اللمس القسري يخالف الحدود الشخصية ويثير نوبات الهلع الدفاعية. توفير ممر هادئ يحقق الإخلاء بكرامة."
+          }
+        },
+        {
+          id: "201",
+          phaseId: "phase2",
+          title: { en: "Processing Guilt After Unsuccessful CPR Attempt", ar: "معالجة شعور الذنب بعد محاولة إنعاش قلبي غير ناجحة" },
+          description: {
+            en: "A responder feels profound guilt and distress hours after a colleague passed away despite performing CPR according to protocol. How should they be supported?",
+            ar: "يشعر مسعف بذنب شديد بعد ساعات من وفاة زميل رغم تطبيقه لخطوات الإنعاش القلبي بدقة. كيف يتم دعمه؟"
+          },
+          options: [
+            { 
+              id: "A", 
+              text: { 
+                en: "Normalize their stress response, reassure them that feeling shaken is normal, listen without judging, and offer confidential peer or professional support.", 
+                ar: "طمأنته بأن مشاعر الصدمة طبيعية جداً، الاستماع دون إعطاء أحكام، وتوفير دعم الأقران أو الدعم المتخصص بشكل سرّي." 
+              }, 
+              correct: true 
+            },
+            { 
+              id: "B", 
+              text: { 
+                en: "Tell them: 'You failed your training and need to rethink your role.'", 
+                ar: "قول: 'لقد فشلت في تدريبك وعليك إعادة النظر في دورك.'" 
+              }, 
+              correct: false 
+            },
+            { 
+              id: "C", 
+              text: { 
+                en: "Force them to publicly present a detailed report of their failure to the whole team.", 
+                ar: "إجباره على تقديم تقرير مفصل عن فشله علناً أمام الفريق بأكمله." 
+              }, 
+              correct: false 
+            }
+          ],
+          explanation: {
+            en: "Post-incident distress and guilt after cardiac arrest events are common acute stress reactions. Supportive, non-judgmental validation preserves responder mental health.",
+            ar: "الشعور بالذنب بعد حالات التوقف القلبي هو رد فعل طبيعي للضغط الحاد. التقبل والمساندة البدون أحكام تحمي الصحة النفسية للمسعف."
+          },
+          whatToSay: {
+            en: '"You acted with bravery and honor. What you are feeling is a normal reaction to an extreme situation. You are not alone."',
+            ar: '"ما قمت به عمل نبيل وشجاع. مشاعرك الحالية هي استجابة بشرية طبيعية لظرف استثنائي ونحن نقف بجانبك."'
+          },
+          whatNotToSay: {
+            en: '"If only you pressed faster", "You messed up", or blaming the responder.',
+            ar: '"لو أنك ضغطت أسرع لما مات"، أو إلقاء اللوم عليه.'
+          },
+          culturalRationale: {
+            en: "Affirming medical reality paired with belief in Qadar (Divine decree) shields responders from moral injury and PTSD in Saudi workplaces.",
+            ar: "الجمع بين الإقرار بالجهد الطبي والإيمان بالقدر يحمي المسعفين من جلد الذات والاحتراق النفسي."
+          }
+        },
+        {
+          id: "202",
+          phaseId: "phase2",
+          title: { en: "Separating Operational AAR from Emotional Support", ar: "فصل مراجعة العمليات AAR عن الدعم النفسي الفردي" },
+          description: {
+            en: "The team lead convenes the post-incident meeting. How should operational learning be managed without turning it into forced group therapy?",
+            ar: "يعقد قائد الفريق اجتماع ما بعد الحادث. كيف يتم إدارة التعلم العملياتي دون تحويله لتفريغ نفسي جماعي إجباري؟"
+          },
+          options: [
+            { 
+              id: "A", 
+              text: { 
+                en: "Conduct WHO After-Action Review (AAR) strictly on processes (What was expected? What happened? What to improve?). Keep individual emotional care voluntary and separate.", 
+                ar: "إجراء مراجعة AAR للمنشأة على العمليات فقط (ما المتوقع؟ ماذا حدث؟ ما التحسين المطلوب؟). وإبقاء الدعم العاطفي الفردي طوعياً ومستقلاً." 
+              }, 
+              correct: true 
+            },
+            { 
+              id: "B", 
+              text: { 
+                en: "Force every participant to share their traumatic feelings and cry in front of management.", 
+                ar: "إجبار كل مشارك على مشاركة مشاعره الصادمة والبكاء أمام الإدارة." 
+              }, 
+              correct: false 
+            },
+            { 
+              id: "C", 
+              text: { 
+                en: "Combine investigation blame, performance reviews, and psychological debriefing in one single meeting.", 
+                ar: "دمج التحقيق والعقاب والتقييم الوظيفي والتفريغ النفسي في اجتماع واحد." 
+              }, 
+              correct: false 
+            }
+          ],
+          explanation: {
+            en: "WHO guidelines explicitly mandate separating technical operational learning (AAR) from clinical/psychological support to prevent secondary traumatization.",
+            ar: "توصي معايير منظمة الصحة العالمية بفصل التعلم التقني (AAR) عن الدعم النفسي الفردي لمنع الصدمات الثانوية."
+          },
+          whatToSay: {
+            en: '"Today\'s AAR strictly reviews operational workflows and communication. Emotional debriefing is voluntary and available privately afterward."',
+            ar: '"جلسة AAR اليوم تركز فقط على مراجعة الإجراءات التقنية والاتصالات، بينما الدعم النفسي متاح بشكل فردي وسري لمن يرغب."'
+          },
+          whatNotToSay: {
+            en: '"Everyone around the table must now recount their personal emotional trauma for the report."',
+            ar: '"يجب على الجميع الآن التحدث عن مشاعرهم الصادمة أمام الإدارة لتوثيقها."'
+          },
+          culturalRationale: {
+            en: "Forced emotional disclosure in corporate settings violates professional dignity and re-traumatizes individuals. Separating reviews respects employee privacy.",
+            ar: "الإفصاح النفسي الإجباري يخرق الخصوصية ويفاقم الصدمة. الفصل الصارم بين العمليات والدعم يحفظ كرامة الموظف."
+          }
+        },
+        {
+          id: "203",
+          phaseId: "phase2",
+          title: { en: "Saudi Institutional Support Pathways & Confidentiality", ar: "مسارات الدعم المؤسسي بالمملكة والسرية" },
+          description: {
+            en: "An employee requests mental health support 3 days post-incident but expresses deep fear about workplace reputation and family stigma.",
+            ar: "طلب موظف دعماً نفسياً بعد 3 أيام من الحادث لكنه أبدى تخوفاً شديداً على سمعته الوظيفية والوصمة الاجتماعية."
+          },
+          options: [
+            { 
+              id: "A", 
+              text: { 
+                en: "Reassure total confidentiality, frame it as 'Post-Incident Wellbeing Support', and provide direct confidential pathways: MOH 937 hotline, internal EAP, or NCMHP services.", 
+                ar: "طمأنته بالسرية التامة، تسميتها 'دعم الرفاهية بعد الحوادث'، وتوفير قنوات سرية: خط وزارة الصحة 937، برنامج EAP الداخلي، أو خدمات المركز الوطني للصحة النفسية." 
+              }, 
+              correct: true 
+            },
+            { 
+              id: "B", 
+              text: { 
+                en: "Notify their supervisor and HR manager immediately about their psychological vulnerability.", 
+                ar: "إبلاغ المشرف المباشر والموارد البشرية فوراً عن ضعفه النفسي." 
+              }, 
+              correct: false 
+            },
+            { 
+              id: "C", 
+              text: { 
+                en: "Dismiss their concerns and tell them to ignore their feelings.", 
+                ar: "تجاهل تخوفاته وإخباره بإهمال مشاعره." 
+              }, 
+              correct: false 
+            }
+          ],
+          explanation: {
+            en: "Recent Saudi mental health literature highlights stigma and privacy concerns. Utilizing non-stigmatizing terminology ('Wellbeing') and linking with MOH 937 / NCMHP ensures safe help-seeking.",
+            ar: "تؤكد الدراسات السعودية الأخيرة على أهمية السرية. استخدام مصطلحات غير وصمية ('الرفاهية') والربط مع 937 والمركز الوطني يضمن طلب المساعدة بآمان."
+          },
+          whatToSay: {
+            en: '"Your privacy is legally protected. This is standard resilience support. You can call MOH 937 (Ext. 1) or access NCMHP Qareebon 100% confidentially."',
+            ar: '"خصوصيتك محمية نظامياً بالكامل. يمكنك الاتصال بوزارة الصحة 937 (تحويلة 1) أو تطبيق قريبون بسرية تامة ومجاناً دون علم الإدارة."'
+          },
+          whatNotToSay: {
+            en: '"I have to log your name in HR\'s psychological risk file", or "Seeking mental health help will hurt your badge renewal."',
+            ar: '"يجب أن أسجل اسمك في ملف الموارد البشرية"، أو "العلاج النفسي يضر تصريحك الأمني."'
+          },
+          culturalRationale: {
+            en: "Saudi Vision 2030 Quality of Life prioritizes confidential mental healthcare. Directing responders to MOH 937 removes stigma completely.",
+            ar: "برامج رؤية 2030 تؤكد على سرية الرعاية النفسية. توجيه الموظف للخطوط الوطنية 937 وقريبون يزيل الوصمة تماماً."
+          }
+        }
+      ]
+    };
+
+    // APP STATE
+    let currentLang = 'en';
+    let participant = { fullName: '', employeeId: '', date: '' };
+    let currentIdx = 0;
+    let userAnswers = [];
+    let hasAnsweredCurrent = false;
+
+    // Set today as default date
+    document.getElementById('reg-date').value = new Date().toISOString().split('T')[0];
+
+    // Language Toggle
+    function setLang(lang) {
+      currentLang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = lang;
+      document.getElementById('btn-lang-en').classList.toggle('active', lang === 'en');
+      document.getElementById('btn-lang-ar').classList.toggle('active', lang === 'ar');
+      updateUiText();
+    }
+
+    function updateUiText() {
+      const isAr = currentLang === 'ar';
+      document.getElementById('nav-brand-text').innerText = isAr ? 'مطار الملك سلمان الدولي' : 'KSIA RIYADH';
+      document.getElementById('nav-sub-text').innerText = isAr ? 'فريق الدعم النفسي الأولي والاستجابة للأزمات' : 'King Salman International Airport Emergency Response';
+      
+      document.getElementById('reg-title').innerText = isAr ? 'محاكي الدعم النفسي الأولي والرعاية الذاتية' : 'Psychological First Aid & Human Support Simulator';
+      document.getElementById('reg-desc').innerText = isAr ? 'برنامج تفاعلي عميق لموظفي الإدارة وفرق الطوارئ وفق معايير WHO PFA وتوجيهات وزارة الصحة 937 والمركز الوطني.' : 'In-depth responder simulation adhering to WHO PFA Guidelines, IASC MHPSS Standards, and Saudi MOH 937 / NCMHP Directives.';
+      document.getElementById('notice-title').innerText = isAr ? '⏳ مبدأ تعليمي حاسم: لا يوجد مؤقت زمني أو ضغط وقت' : '⏳ CRITICAL PEDAGOGICAL NOTICE: ZERO TIME PRESSURE';
+      document.getElementById('notice-desc').innerHTML = isAr ? 'تم تصميم هذا البرنامج <strong>بدون أي مؤقت زمني</strong> للتأمل العميق وقراءة النصوص الحرفية واستيعاب الحيثيات النفسية والثقافية بحرية كاملة.' : 'This training module has <strong>NO COUNTDOWN TIMER</strong>. Take all the time you need to reflect, read word-for-word scripts, and process emotional safety at your natural pace.';
+      
+      document.getElementById('lbl-name').innerText = isAr ? 'الاسم الكامل *' : 'Full Legal Name *';
+      document.getElementById('lbl-id').innerText = isAr ? 'الرقم الوظيفي *' : 'Employee ID Number *';
+      document.getElementById('lbl-date').innerText = isAr ? 'تاريخ التقييم *' : 'Assessment Date *';
+      document.getElementById('btn-start-text').innerText = isAr ? 'بدء المحاكي الآن ➔' : 'START PFA SIMULATOR ➔';
+
+      document.getElementById('audit-legend').innerText = isAr ? '⭐ تذكير: قم بتحميل شهادتك الرسمية بصيغة PDF ومشاركتها في مجموعة فريق العمل!' : '⭐ Remember to download your PDF certificate and share it in your team group!';
+      document.getElementById('btn-download-text').innerText = isAr ? '📥 تحميل الشهادة الرسمية PDF المعتمدة' : '📥 DOWNLOAD OFFICIAL PDF CERTIFICATE';
+      document.getElementById('btn-restart-text').innerText = isAr ? '↺ إعادة تشغيل المحاكي' : '↺ Retake Simulation Drill';
+
+      // Refresh scenario if active
+      if (!document.getElementById('screen-sim').classList.contains('hidden')) {
+        renderScenario();
+      }
+    }
+
+    // Registration Handler
+    function handleRegistration(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const id = document.getElementById('reg-id').value.trim();
+      const date = document.getElementById('reg-date').value;
+
+      let valid = true;
+      if (!name || name.length < 3) {
+        document.getElementById('err-name').classList.remove('hidden');
+        valid = false;
+      } else {
+        document.getElementById('err-name').classList.add('hidden');
+      }
+
+      if (!id) {
+        document.getElementById('err-id').classList.remove('hidden');
+        valid = false;
+      } else {
+        document.getElementById('err-id').classList.add('hidden');
+      }
+
+      if (!valid) return;
+
+      participant = { fullName: name, employeeId: id, date: date };
+      currentIdx = 0;
+      userAnswers = [];
+      
+      document.getElementById('screen-reg').classList.add('hidden');
+      document.getElementById('screen-sim').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      renderScenario();
+    }
+
+    // Render Current Scenario
+    function renderScenario() {
+      const isAr = currentLang === 'ar';
+      const s = DATASET.scenarios[currentIdx];
+      hasAnsweredCurrent = false;
+
+      // Update Phase tag
+      const isPhase1 = s.phaseId === 'phase1';
+      document.getElementById('sim-phase-tag').innerText = isPhase1 
+        ? (isAr ? 'المرحلة 1: التدخل العملي الميداني' : 'PHASE 1: PRACTICAL ON-SCENE HELP')
+        : (isAr ? 'المرحلة 2: الرعاية الذاتية لما بعد الأزمة' : 'PHASE 2: POST-CRISIS SELF-CARE');
+
+      document.getElementById('sim-step-tag').innerText = `${currentIdx + 1} / ${DATASET.scenarios.length}`;
+      document.getElementById('sim-progress-bar').style.width = `${((currentIdx + 1) / DATASET.scenarios.length) * 100}%`;
+
+      document.getElementById('sim-title').innerText = isAr ? s.title.ar : s.title.en;
+      document.getElementById('sim-desc').innerText = isAr ? s.description.ar : s.description.en;
+
+      // Render Options
+      const container = document.getElementById('sim-options-container');
+      container.innerHTML = '';
+      s.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.id = `opt-${opt.id}`;
+        btn.onclick = () => selectOption(opt.id, opt.correct);
+        btn.innerHTML = `<span class="option-tag">${opt.id}</span><span>${isAr ? opt.text.ar : opt.text.en}</span>`;
+        container.appendChild(btn);
+      });
+
+      // Hide feedback
+      document.getElementById('sim-feedback-card').classList.add('hidden');
+    }
+
+    // Select Option (Immediate Pedagogical Feedback)
+    function selectOption(optionId, isCorrect) {
+      if (hasAnsweredCurrent) return;
+      hasAnsweredCurrent = true;
+
+      const isAr = currentLang === 'ar';
+      const s = DATASET.scenarios[currentIdx];
+
+      userAnswers.push({
+        scenarioId: s.id,
+        selectedOptionId: optionId,
+        isCorrect: isCorrect
+      });
+
+      // Highlight options
+      s.options.forEach((opt) => {
+        const btn = document.getElementById(`opt-${opt.id}`);
+        btn.disabled = true;
+        if (opt.id === optionId) {
+          btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+        } else if (opt.correct) {
+          btn.classList.add('correct');
+        }
+      });
+
+      // Render Pedagogical Feedback
+      const feedbackBox = document.getElementById('sim-feedback-box');
+      feedbackBox.className = `feedback-box ${isCorrect ? 'correct' : 'incorrect'}`;
+      
+      document.getElementById('sim-feedback-title').innerText = isCorrect
+        ? (isAr ? '✓ إجابة ممتازة مطابقة للمعايير' : '✓ EXCELLENT - STANDARDS COMPLIANT')
+        : (isAr ? '⚠️ توجيه تصحيحي للمعايير' : '⚠️ PEDAGOGICAL CORRECTION');
+      
+      document.getElementById('sim-feedback-exp').innerText = isAr ? s.explanation.ar : s.explanation.en;
+      document.getElementById('sim-what-to-say').innerText = isAr ? s.whatToSay.ar : s.whatToSay.en;
+      document.getElementById('sim-what-not-to-say').innerText = isAr ? s.whatNotToSay.ar : s.whatNotToSay.en;
+      document.getElementById('sim-rationale').innerText = isAr ? s.culturalRationale.ar : s.culturalRationale.en;
+
+      document.getElementById('sim-feedback-card').classList.remove('hidden');
+
+      // CRITICAL REQUIREMENT: Smooth scroll to top immediately after submitting an answer
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Next Scenario / Phase transition
+    function nextScenario() {
+      // If moving from index 2 to 3, show Phase 2 interlude!
+      if (currentIdx === 2) {
+        document.getElementById('screen-sim').classList.add('hidden');
+        document.getElementById('screen-interlude').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      if (currentIdx + 1 < DATASET.scenarios.length) {
+        currentIdx++;
+        renderScenario();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        showAuditScreen();
+      }
+    }
+
+    function startPhase2() {
+      currentIdx = 3;
+      document.getElementById('screen-interlude').classList.add('hidden');
+      document.getElementById('screen-sim').classList.remove('hidden');
+      renderScenario();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Final Audit Screen
+    function showAuditScreen() {
+      document.getElementById('screen-sim').classList.add('hidden');
+      document.getElementById('screen-interlude').classList.add('hidden');
+      document.getElementById('screen-audit').classList.remove('hidden');
+
+      const isAr = currentLang === 'ar';
+      const score = userAnswers.filter(a => a.isCorrect).length;
+      const total = DATASET.scenarios.length;
+      const pct = Math.round((score / total) * 100);
+
+      document.getElementById('audit-score').innerText = `${score} / ${total} (${pct}%)`;
+      document.getElementById('audit-meta').innerText = `${participant.fullName} (ID: ${participant.employeeId}) • ${participant.date}`;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Download Official PDF strictly in English as mandated
+    function downloadOfficialPdf() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 14;
+      const contentWidth = pageWidth - margin * 2;
+
+      // Background
+      doc.setFillColor(248, 250, 252);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+      // Tactical Borders
+      doc.setDrawColor(30, 41, 59);
+      doc.setLineWidth(1.2);
+      doc.rect(margin, margin, contentWidth, pageHeight - margin * 2);
+
+      doc.setDrawColor(202, 138, 4);
+      doc.setLineWidth(0.4);
+      doc.rect(margin + 2, margin + 2, contentWidth - 4, pageHeight - margin * 2 - 4);
+
+      const cardX = margin + 4;
+      const cardWidth = contentWidth - 8;
+      const cardRight = cardX + cardWidth;
+
+      // Top Header
+      doc.setFillColor(15, 23, 42);
+      doc.rect(margin + 2.5, margin + 2.5, contentWidth - 5, 27, 'F');
+
+      doc.setTextColor(250, 204, 21);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11.5);
+      doc.text('KING SALMAN INTERNATIONAL AIRPORT (KSIA) - RIYADH', pageWidth / 2, margin + 8.5, { align: 'center' });
+
+      doc.setTextColor(226, 232, 240);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text('Emergency Response Team (ERT) & Administration Complex Crisis Command', pageWidth / 2, margin + 14, { align: 'center' });
+      doc.text('Directorate of Occupational Safety, Health & Human Support', pageWidth / 2, margin + 19, { align: 'center' });
+
+      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(6.5);
+      doc.text('WHO PFA Protocols | IASC MHPSS Standards | Saudi MOH 937 | NCMHP Framework', pageWidth / 2, margin + 24, { align: 'center' });
+
+      // Title
+      let curY = margin + 34;
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text('OFFICIAL AUDIT REPORT', pageWidth / 2, curY, { align: 'center' });
+
+      curY += 5;
+      doc.setFontSize(8);
+      doc.setTextColor(71, 85, 105);
+      doc.text('PSYCHOLOGICAL FIRST AID (PFA) & HUMAN SUPPORT COMPETENCY AUDIT', pageWidth / 2, curY, { align: 'center' });
+
+      // Officer Info Box
+      curY += 4.5;
+      const recipientBoxHeight = 22;
+      doc.setFillColor(241, 245, 249);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(cardX, curY, cardWidth, recipientBoxHeight, 2, 2, 'FD');
+
+      // Subtle divider
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.2);
+      doc.line(pageWidth / 2, curY + 3, pageWidth / 2, curY + recipientBoxHeight - 3);
+
+      const leftX = cardX + 4;
+      const rightX = pageWidth / 2 + 5;
+
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.setFont('helvetica', 'bold');
+      doc.text('OFFICER / RESPONDER NAME:', leftX, curY + 5.5);
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(9);
+      const nameLines = doc.splitTextToSize(participant.fullName.trim().toUpperCase(), 78);
+      doc.text(nameLines[0], leftX, curY + 10.5);
+
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text('EMPLOYEE ID NUMBER:', leftX, curY + 16.5);
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(8.5);
+      doc.text(`#${participant.employeeId.trim()}`, leftX + 32, curY + 16.5);
+
+      doc.setTextColor(100, 116, 139);
+      doc.text('EVALUATION DATE:', rightX, curY + 5.5);
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text(participant.date, rightX + 28, curY + 5.5);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(7);
+      doc.text('LOCATION / STATION:', rightX, curY + 11.5);
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'normal');
+      doc.text('KSIA Admin Complex, Riyadh, KSA', rightX, curY + 16.5);
+
+      // Score status
+      curY += recipientBoxHeight + 3.5;
+      const score = userAnswers.filter(a => a.isCorrect).length;
+      const total = DATASET.scenarios.length;
+      const isPassed = score >= 5;
+      const isDistinction = score === total;
+      const metricBarHeight = 11;
+
+      const designation = isDistinction
+        ? 'PFA Tactical Specialist (Distinction)'
+        : isPassed
+        ? 'PFA Tactical Responder (Proficient)'
+        : 'Operational Protocol Review';
+
+      doc.setFillColor(isPassed ? 240 : 254, isPassed ? 253 : 242, isPassed ? 244 : 242);
+      doc.setDrawColor(isPassed ? 34 : 239, isPassed ? 197 : 68, isPassed ? 94 : 68);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(cardX, curY, cardWidth, metricBarHeight, 2, 2, 'FD');
+
+      doc.setTextColor(isPassed ? 22 : 185, isPassed ? 101 : 28, isPassed ? 52 : 28);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.text(`AUDIT STATUS: ${designation.toUpperCase()}`, cardX + 5, curY + 7);
+      doc.setFontSize(9);
+      doc.text(`SCORE: ${score}/${total} (${Math.round((score/total)*100)}%)`, cardRight - 5, curY + 7, { align: 'right' });
+
+      // Table Header
+      curY += metricBarHeight + 3.5;
+      const tableHeaderHeight = 6.5;
+      doc.setFillColor(30, 41, 59);
+      doc.rect(cardX, curY, cardWidth, tableHeaderHeight, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+
+      const col1X = cardX + 3;
+      const col2X = cardX + 63;
+      const col3X = cardX + 91;
+      const col4X = cardX + 117;
+      const col4Width = cardRight - col4X - 2;
+
+      doc.text('SCENARIO BRIEFING & TOPIC', col1X, curY + 4.5);
+      doc.text('PHASE', col2X, curY + 4.5);
+      doc.text('RESULT', col3X, curY + 4.5);
+      doc.text('OPTIMAL ACTION RATIONALE', col4X, curY + 4.5);
+
+      curY += tableHeaderHeight;
+
+      // Rows
+      const rowHeight = 12.2;
+      DATASET.scenarios.forEach((sc, idx) => {
+        const ans = userAnswers.find(a => a.scenarioId === sc.id);
+        const correct = ans ? ans.isCorrect : false;
+
+        doc.setFillColor(idx % 2 === 0 ? 255 : 248, idx % 2 === 0 ? 255 : 250, idx % 2 === 0 ? 255 : 252);
+        doc.rect(cardX, curY, cardWidth, rowHeight, 'F');
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.2);
+        doc.line(cardX, curY + rowHeight, cardRight, curY + rowHeight);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(15, 23, 42);
+        const titleLines = doc.splitTextToSize(`${sc.id}. ${sc.title.en}`, 58);
+        doc.text(titleLines[0], col1X, curY + 4.2);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6);
+        doc.setTextColor(100, 116, 139);
+        const categoryLines = doc.splitTextToSize(sc.category ? sc.category.en : '', 58);
+        doc.text(categoryLines[0], col1X, curY + 8.2);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.8);
+        doc.setTextColor(51, 65, 85);
+        doc.text(sc.phaseId === 'phase1' ? 'Phase 1: On-Scene' : 'Phase 2: Self-Care', col2X, curY + 6.2);
+
+        if (correct) {
+          doc.setTextColor(22, 163, 74);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.text('COMPLIANT', col3X, curY + 6.2);
+        } else {
+          doc.setTextColor(220, 38, 38);
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.text('REVIEWED', col3X, curY + 6.2);
+        }
+
+        doc.setTextColor(71, 85, 105);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.8);
+        const expLines = doc.splitTextToSize(sc.explanation.en, col4Width);
+        doc.text(expLines[0] || '', col4X, curY + 4.2);
+        if (expLines[1]) {
+          doc.text(expLines[1], col4X, curY + 8.2);
+        }
+
+        curY += rowHeight;
+      });
+
+      // Saudi Health Directives Box
+      curY += 4;
+      const directivesBoxHeight = 22;
+      doc.setFillColor(241, 245, 249);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(cardX, curY, cardWidth, directivesBoxHeight, 2, 2, 'FD');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.2);
+      doc.setTextColor(15, 23, 42);
+      doc.text('MANDATED RESILIENCE & CULTURAL PROTOCOLS (SAUDI MOH COMPLIANCE):', cardX + 4, curY + 4.8);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(51, 65, 85);
+      doc.text('• Zero Forced Disclosure: Never compel trauma narrative or forced group debriefing during technical AARs.', cardX + 4, curY + 9.5);
+      doc.text('• Respectful Accompaniment: Honor natural grief (Rahmah) and Islamic bereavement etiquette; avoid toxic positivity.', cardX + 4, curY + 13.8);
+      doc.text('• Confidential Institutional Linking: Direct employees to MOH 937 & NCMHP Qareebon with strict privacy.', cardX + 4, curY + 18.0);
+
+      // Signatures
+      curY += directivesBoxHeight + 5;
+      const sigColWidth = (cardWidth - 10) / 2;
+      const leftSigX = cardX + 2;
+      const rightSigX = cardX + sigColWidth + 8;
+
+      doc.setDrawColor(148, 163, 184);
+      doc.setLineWidth(0.35);
+      doc.line(leftSigX, curY + 10, leftSigX + sigColWidth, curY + 10);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text('Dr. Tariq Al-Ghamdi, MD, MPH', leftSigX, curY + 14);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.2);
+      doc.setTextColor(100, 116, 139);
+      doc.text('Director of Occupational Health & Emergency Resilience', leftSigX, curY + 17.5);
+      doc.setFontSize(5.8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('King Salman International Airport (KSIA) Administration', leftSigX, curY + 21);
+
+      doc.setDrawColor(148, 163, 184);
+      doc.setLineWidth(0.35);
+      doc.line(rightSigX, curY + 10, rightSigX + sigColWidth, curY + 10);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text('Eng. Fahad Al-Otaibi, CEM', rightSigX, curY + 14);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.2);
+      doc.setTextColor(100, 116, 139);
+      doc.text('Chief of Crisis Management (KSIA EROC Command)', rightSigX, curY + 17.5);
+      doc.setFontSize(5.8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('King Salman International Airport (KSIA) Administration', rightSigX, curY + 21);
+
+      // Footer
+      const footerDividerY = pageHeight - margin - 12;
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.3);
+      doc.line(cardX, footerDividerY, cardRight, footerDividerY);
+
+      const footerLine1Y = footerDividerY + 4;
+      doc.setFontSize(6.2);
+      doc.setTextColor(100, 116, 139);
+      doc.setFont('helvetica', 'normal');
+      doc.text('King Salman International Airport (KSIA) Administration Complex, Riyadh, KSA', cardX + 1, footerLine1Y);
+
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(6.2);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Ref: KSIA-PFA-${participant.employeeId}`, cardRight - 1, footerLine1Y, { align: 'right' });
+
+      const footerLine2Y = footerDividerY + 8;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(5.8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('Official PFA Audit Record • Validated in compliance with WHO PFA & Saudi MOH Guidelines', cardX + 1, footerLine2Y);
+      doc.text(`Evaluated: ${participant.date} • Score: ${score}/${total}`, cardRight - 1, footerLine2Y, { align: 'right' });
+
+      // Save PDF as specified
+      const sanitizedId = participant.employeeId.replace(/[^a-zA-Z0-9_-]/g, '_') || 'REC';
+      const fileName = `KSIA_PFA_HumanSupport_Report_${sanitizedId}.pdf`;
+      doc.save(fileName);
+    }
+
+    function restartDrill() {
+      document.getElementById('screen-audit').classList.add('hidden');
+      document.getElementById('screen-reg').classList.remove('hidden');
+      document.getElementById('reg-name').value = '';
+      document.getElementById('reg-id').value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

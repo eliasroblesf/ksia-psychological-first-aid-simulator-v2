@@ -1,0 +1,8 @@
+{
+  "name": "ksia-psychological-first-aid-simulator-v2",
+  "description": "Deep Psychological First Aid, Human Support \u0026 Post-Crisis Self-Care Simulator for King Salman International Airport (KSIA) Administration Complex responders, adhering to WHO PFA, IASC MHPSS, and Saudi MOH/NCMHP guidelines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

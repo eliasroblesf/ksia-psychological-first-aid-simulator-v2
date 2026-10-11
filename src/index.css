@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@keyframes bleepYellow {
+  0% { 
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.85); 
+    border-color: #facc15; 
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  70% { 
+    box-shadow: 0 0 0 16px rgba(250, 204, 21, 0); 
+    border-color: #eab308; 
+  }
+  100% { 
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); 
+    border-color: #facc15; 
+    transform: scale(1);
+  }
+}
+
+.bleeping-yellow-btn {
+  animation: bleepYellow 1.5s infinite ease-in-out;
+  background-color: #facc15 !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  border: 2px solid #facc15 !important;
+}
+
+/* Custom font styling */
+[dir="rtl"] {
+  font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
+[dir="ltr"] {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.font-mono-tactical {
+  font-family: 'JetBrains Mono', monospace;
+}
